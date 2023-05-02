@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tapipy = "==1.2.19"
+tapisservice = "==1.2.6"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
