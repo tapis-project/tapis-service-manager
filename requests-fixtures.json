@@ -1,0 +1,18 @@
+{
+    "instructions": [
+        {
+            "service": "workflows",
+            "component": "api",
+            "commands": ["restart"]
+        },
+        {
+            "service": "workflows",
+            "component": "engine",
+            "commands": ["restart"]
+        },
+        {
+            "component": "nginx",
+            "commands": ["newconfig"]
+        }
+    ]
+}
