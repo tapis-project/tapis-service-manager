@@ -7,5 +7,8 @@ class TapisServiceAuth:
         # do something with the request object
         content_type = request.headers.get('Content-Type')
         print(content_type)
+
+        request.username = "workflows"
+        #return {"validated": True, "username": "workflows"}
         
-        return True
+        return request
