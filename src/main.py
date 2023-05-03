@@ -6,7 +6,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from configs import services, commands
-from http.responses import BaseResponse
+from _http.responses import BaseResponse
 
 
 app = FastAPI()
@@ -29,30 +29,28 @@ def get_service_components(service_name: str):
 
 @app.get("/service/{service_name}/commands")
 def get_service_commands(service_name: str):
-    commands = [
+    cmds = [
         component["commands"] for component in services[service_name]["components"] 
         if component.get("commands", None) != None
     ]
-    return {f"Commands for {service_name}": commands}
+    return vars(BaseResponse(200, result=cmds))
 
 
 @app.get("/commands")
 def get_commands():
-    return {"result": commands}
+    return vars(BaseResponse(200, result=commands))
 
 
 @app.get("/commands/{command}")
 def get_command(command: str):
-    #try:
     cmd = next(filter(lambda cmd: cmd['name'] == command, commands), None)
 
-    #except Exception as e:
     if cmd == None:
         return vars(BaseResponse(
-            status=404,
+            404,
             message="Command not found",
             result=None
         ))
            
-    return vars(BaseResponse(result=cmd))
+    return vars(BaseResponse(200, result=cmd))
 
