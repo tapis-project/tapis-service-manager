@@ -1,10 +1,12 @@
 import json
+
 from typing import Annotated
-from configs.services import services
-from configs.commands import commands
 
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
+from configs import services, commands
+from http.responses import BaseResponse
 
 
 app = FastAPI()
@@ -46,14 +48,11 @@ def get_command(command: str):
 
     #except Exception as e:
     if cmd == None:
-        return {
-            "status": 404,
-            "message": "fail",
-            "result": None,
-        } 
-    return {
-        "status": 200,
-        "message": "Success",
-        "result": cmd
-    }
+        return vars(BaseResponse(
+            status=404,
+            message="Command not found",
+            result=None
+        ))
+           
+    return vars(BaseResponse(result=cmd))
 
