@@ -36,11 +36,24 @@ def get_service_commands(service_name: str):
 
 @app.get("/commands")
 def get_commands():
-    return {"Commands": commands}
+    return {"result": commands}
 
 
 @app.get("/commands/{command}")
 def get_command(command: str):
-    commands = {cmd["name"]: cmd for cmd in commands}
-    return {"Command": commands[command]}
+    #try:
+    cmd = next(filter(lambda cmd: cmd['name'] == command, commands), None)
+
+    #except Exception as e:
+    if cmd == None:
+        return {
+            "status": 404,
+            "message": "fail",
+            "result": None,
+        } 
+    return {
+        "status": 200,
+        "message": "Success",
+        "result": cmd
+    }
 
