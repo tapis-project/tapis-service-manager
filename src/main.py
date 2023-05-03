@@ -6,15 +6,18 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from configs import services, commands
-from _http.responses import BaseResponse
+from views.http.responses import BaseResponse
+from middleware import TapisServiceAuth
 
 
 app = FastAPI()
 
-
 @app.get("/")
-def index():
-    return {"Service Manager API": "Navigate to /docs or /redoc for API spec"}
+def index(request):
+    if TapisServiceAuth()(request):
+        return {"Service Manager API": "Navigate to /docs or /redoc for API spec"}
+
+    return BaseResponse(401, message="Not Authenticated")
 
 
 @app.get("/service/{service_name}")
