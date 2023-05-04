@@ -39,5 +39,19 @@ services = {
                 ]
             }
         ]
+    },
+    "jupyterhub": {
+        "basePath": "~/scinco-deploy/tacc-dev.io.jupyter.tacc.cloud",
+        "useDefaultCommands": True,
+        "useNameAsPath": True,
+        "credentialsSecretRef": "jupyterhub-jenkins-ssh-key",
+        "components": [
+            {
+                "name": "jupyterhub-admin"
+            },
+            {
+                "name": "jupyter"
+            }
+        ]
     }
 }

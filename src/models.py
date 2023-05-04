@@ -1,6 +1,13 @@
+import enum
+
 from typing import List, Optional
 from pydantic import BaseModel
 
+
+class Scope(enum.Enum):
+    Service = "service"
+    Component = "component"
+    
 class Command(BaseModel):
     name: str
     scripts: list[str]
