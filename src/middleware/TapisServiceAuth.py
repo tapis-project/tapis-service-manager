@@ -3,12 +3,15 @@ from fastapi import Request
 from tapipy.tapis import Tapis
 
 class TapisServiceAuth:
-    def __call__(self, request: Request):
+    def __init__(self, request: Request):
+        self.request = request
+
+    def __call__(self):
         # do something with the request object
-        content_type = request.headers.get('Content-Type')
+        content_type = self.request.headers.get('Content-Type')
         print(content_type)
 
-        request.username = "workflows"
+        self.request.username = "workflows"
         #return {"validated": True, "username": "workflows"}
         
-        return request
+        return self.request

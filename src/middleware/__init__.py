@@ -1,1 +1,2 @@
 from .TapisServiceAuth import TapisServiceAuth
+from .ServiceCanRunCommand import ServiceCanRunCommand
