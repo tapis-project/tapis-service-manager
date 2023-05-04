@@ -9,6 +9,5 @@ class TapisServiceAuth:
         print(content_type)
 
         request.username = "workflows"
-        #return {"validated": True, "username": "workflows"}
         
         return request
