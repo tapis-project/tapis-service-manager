@@ -1,10 +1,12 @@
+import re
+
 from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 
 from configs import services, commands
 from views.http.responses import BaseResponse
 from middleware import TapisServiceAuth, ServiceCanRunCommand
-from utils import dispatch_middelwares 
+from utils import dispatch_middelwares, generate_route_summary
 
 
 app = FastAPI()
@@ -93,7 +95,7 @@ def runCommand(service: str, command: str, request: Request):
 def camel_case_operation_ids(app: FastAPI) -> None:
     for route in app.routes:
         if isinstance(route, APIRoute):
-            route.summary = route.name
+            route.summary = generate_route_summary(route.name)
             route.operation_id = route.name
 
 camel_case_operation_ids(app)
