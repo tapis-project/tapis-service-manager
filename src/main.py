@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRoute
 
 from configs import services, commands
 from views.http.responses import BaseResponse
@@ -8,12 +8,19 @@ from utils import dispatch_middelwares
 
 app = FastAPI()
 
+def camel_case_operation_ids(app: FastAPI) -> None:
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            route.operation_id = route.summary.lower()
+
+camel_case_operation_ids(app)
+
 @app.get("/")
 def index():
     return vars(BaseResponse(200, result="Welcome to the Service Manager API. Navigate to /docs or /redoc for API spec"))
 
 @app.get("/services")
-def get_services(request: Request):
+def getServices(request: Request):
     request = TapisServiceAuth()(request)
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
@@ -21,7 +28,7 @@ def get_services(request: Request):
     return vars(BaseResponse(200, result=services))
 
 @app.get("/services/{service_name}")
-def get_service(service_name: str, request: Request):
+def getService(service_name: str, request: Request):
     request = TapisServiceAuth()(request)
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
@@ -29,7 +36,7 @@ def get_service(service_name: str, request: Request):
     return vars(BaseResponse(200, result=services[service_name]))
 
 @app.get("/services/{service_name}/components")
-def get_service_components(service_name: str, request: Request):
+def getServiceComponents(service_name: str, request: Request):
     request = TapisServiceAuth()(request)
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
@@ -37,7 +44,7 @@ def get_service_components(service_name: str, request: Request):
     return {"Components": services[service_name]}
 
 @app.get("/services/{service_name}/commands")
-def get_service_commands(service_name: str, request: Request):
+def getServiceCommands(service_name: str, request: Request):
     request = TapisServiceAuth()(request)
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
@@ -49,7 +56,7 @@ def get_service_commands(service_name: str, request: Request):
     return vars(BaseResponse(200, result=cmds))
 
 @app.get("/commands")
-def get_commands(request: Request):
+def getCommand(request: Request):
     request = TapisServiceAuth()(request)
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
@@ -57,7 +64,7 @@ def get_commands(request: Request):
     return vars(BaseResponse(200, result=commands))
 
 @app.post("services/{service}/commands/{command}")
-def get_command(service: str, command: str, request: Request):
+def runCommand(service: str, command: str, request: Request):
     request = dispatch_middelwares([
         TapisServiceAuth(request),
         ServiceCanRunCommand(request, service, command)
