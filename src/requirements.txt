@@ -1,6 +1,7 @@
 anyio==3.6.2
 atomicwrites==1.4.1
 attrs==23.1.0
+bcrypt==4.0.1
 certifi==2022.12.7
 cffi==1.15.1
 charset-normalizer==3.1.0
@@ -17,10 +18,12 @@ lazy-object-proxy==1.9.0
 openapi-core==0.12.0
 openapi-schema-validator==0.2.3
 openapi-spec-validator==0.4.0
+paramiko==3.1.0
 pycparser==2.21
 pycryptodome==3.17
 pydantic==1.10.7
 PyJWT==2.6.0
+PyNaCl==1.5.0
 pyrsistent==0.19.3
 python-dateutil==2.8.2
 python-dotenv==1.0.0

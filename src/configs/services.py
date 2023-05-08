@@ -1,26 +1,31 @@
-services = {
-    "workflows": {
-        "basePath": "~/tapis-kube/workflows",
-        "useDefaultCommands": True,
-        "useNameAsPath": True,
+services = [
+    {
+        "name": "workflows",
+        "base_path": "~/tapis-kube/workflows",
+        "use_default_commands": True,
+        "use_name_as_base_path": True,
         "allow": ["proxy"],
         "components": [
             {
+                "use_default_commands": True,
                 "name": "api"
             },
             {
+                "use_default_commands": True,
                 "name": "engine"
             }
         ]
     },
-    "proxy": {
-        "basePath": "~/tapis-kube/proxy",
-        "useDefaultCommands": True,
-        "useNameAsPath": False,
+    {
+        "name": "proxy",
+        "base_path": "~/tapis-kube/proxy",
+        "use_default_commands": True,
+        "use_name_as_base_path": False,
         "components": [
             {
                 "name": "nginx",
-                "path": "nginx",
+                "base_path": "nginx",
+                "use_default_commands": True,
                 "commands": [
                     {
                         "name": "newconfig",
@@ -30,7 +35,8 @@ services = {
             },
             {
                 "name": "jupyter",
-                "path": "jupyter",
+                "base_path": "jupyter",
+                "use_default_commands": True,
                 "commands": [
                     {
                         "name": "newhub",
@@ -40,18 +46,21 @@ services = {
             }
         ]
     },
-    "jupyterhub": {
-        "basePath": "~/scinco-deploy/tacc-dev.io.jupyter.tacc.cloud",
-        "useDefaultCommands": True,
-        "useNameAsPath": True,
+    {
+        "name": "jupyterhub",
+        "base_path": "~/scinco-deploy/tacc-dev.io.jupyter.tacc.cloud",
+        "use_default_commands": True,
         "credentialsSecretRef": "jupyterhub-jenkins-ssh-key",
+        "allow": ["workflows"],
         "components": [
             {
-                "name": "jupyterhub-admin"
+                "name": "jupyterhub-admin",
+                "use_default_commands": True,
             },
             {
-                "name": "jupyter"
+                "name": "jupyter",
+                "use_default_commands": True,
             }
         ]
     }
-}
+]
