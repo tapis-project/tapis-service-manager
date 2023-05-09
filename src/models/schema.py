@@ -2,9 +2,12 @@ import enum, os
 
 from typing import List
 from pydantic import BaseModel, root_validator
+from dotenv import load_dotenv
 
 from configs.constants import DEFAULT_COMMANDS
 
+
+load_dotenv()
 
 class Scope(enum.Enum):
     Service = "service"
@@ -16,6 +19,8 @@ class Command(BaseModel):
 
 class Service(BaseModel):
     name: str
+    host: str
+    user: str
     base_path: str
     components: List["Service"] = []
     use_default_commands: bool = True
@@ -34,6 +39,14 @@ class Service(BaseModel):
         service_base_path = values.get("base_path", None)
         if service_base_path == None:
             raise ValueError("Schema Error: No base_path provided for service")
+
+        service_host = values.get("host", None)
+        if service_host == None:
+            values["host"] = os.environ.get("HOST", "cic02")
+
+        service_user = values.get("user", None)
+        if service_user == None:
+            values["user"] = os.environ.get("USER", "tapisdev")
 
         # Set use default commands to True if not set
         if values.get("use_default_commands", True) == True:

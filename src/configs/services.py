@@ -48,6 +48,8 @@ services = [
     },
     {
         "name": "jupyterhub",
+        "host": "login02.freetail.tacc.utexas.edu",
+        "user": "jhub-tacc-dev",
         "base_path": "~/scinco-deploy/tacc-dev.io.jupyter.tacc.cloud",
         "use_default_commands": True,
         "credentialsSecretRef": "jupyterhub-jenkins-ssh-key",

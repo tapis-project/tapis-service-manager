@@ -1,5 +1,6 @@
 import io, re, time
 from pprint import pprint
+import base64
 
 import paramiko
 
@@ -17,7 +18,6 @@ from utils import (
     resolve_base_path,
     service_can_run_command
 )
-
 
 
 app = FastAPI()
@@ -166,32 +166,34 @@ def runComponentCommand(
     if private_key == None:
         return vars(BaseResponse(500, message=f"Server Error: Missing private key for Linux user {USER}"))
 
-    # for _ in range(30):
-    #     try:
-    #         ssh = paramiko.client.SSHClient()
-    #         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    #         private_key = paramiko.RSAKey.from_private_key(io.StringIO(CREDENTIALS_SECRET_REF))
-    #         ssh.connect(hostname=HOST, username=USER, pkey=private_key, timeout=60)
-    #         break
-    #     except paramiko.SSHException as e:
-    #         time.sleep(1)
-    #     except Exception as e:
-    #         return vars(BaseResponse(500, message=f"Server Error: {e.message}"))
+    for _ in range(30):
+        try:
+            ssh = paramiko.client.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            private_key_string = base64.b64decode(str(CREDENTIALS_SECRET_REF)).decode("utf-8")
+            private_key = paramiko.RSAKey.from_private_key(io.StringIO(private_key_string))
+            ssh.connect(hostname=HOST, username=USER, pkey=private_key, timeout=60)
+            break
+        except paramiko.SSHException as e:
+            print(e)
+            time.sleep(1)
+        except Exception as e:
+            return vars(BaseResponse(500, message=f"Server Error: {e}"))
     try:
         for script in command.scripts:
             script = "./" + script
             print(f"cd {component.base_path} && {script}")
-            # _, stdout, stderr = ssh.exec_command(f"cd {component.base_path} && {script}", timeout=10)
+            _, stdout, stderr = ssh.exec_command(f"cd {component.base_path} && {script}", timeout=10)
     except paramiko.SSHException as e:
         return vars(BaseResponse(500, message=f"Server Error: ssh exception - {e.message}"))
 
     # if len(stderr) > 0:
     #     return vars(BaseResponse(500, message=f"Server Error: error running command - {stderr}"))
     
-    # result = str(stdout.read().decode('utf-8'))
+    result = str(stdout.read().decode('utf-8'))
 
-    # ssh.close()
-    return vars(BaseResponse(200, result={}))
+    ssh.close()
+    return vars(BaseResponse(200, result=result))
 
 
 def camel_case_operation_ids(app: FastAPI) -> None:
