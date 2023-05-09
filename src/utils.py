@@ -2,7 +2,7 @@ import re, os
 
 from fastapi import Request
 
-from models.schema import Scope
+from model.schema import Scope
 
 
 def dispatch_middelwares(request: Request, middlewares: list):
@@ -34,9 +34,8 @@ def generate_route_summary(route_name: str):
 
     return name
 
-def service_can_run_command(self, username, service, command_name):
-    if username == service.name: return True
-
-    # TODO Check that username is in service allow list
+def service_can_run_command(username, service):
+    if username in service.allow or username == service.name:
+        return True
 
     return False

@@ -7,8 +7,8 @@ import paramiko
 from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 
-from models.schema import Scope
-from models import ServiceRepository as ServiceRepo
+from model.schema import Scope
+from services import container
 from configs.constants import USER, HOST, CREDENTIALS_SECRET_REF, DEFAULT_COMMANDS
 from views.http.responses import BaseResponse
 from middleware import TapisServiceAuth
@@ -28,7 +28,8 @@ def listServices(request: Request):
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
 
-    services = ServiceRepo.list_services()
+    service_repo = container.load("service-repository")
+    services = service_repo.list_services()
     
     return vars(BaseResponse(200, result=[service.dict() for service in services]))
 
@@ -38,7 +39,8 @@ def getService(service_name: str, request: Request):
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
 
-    service = ServiceRepo.get_service(service_name)
+    service_repo = container.load("service-repository")
+    service = service_repo.get_service(service_name)
     
     return vars(BaseResponse(200, result=service.dict()))
 
@@ -48,9 +50,21 @@ def listServiceComponents(service_name: str, request: Request):
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
 
-    components = ServiceRepo.list_components(service_name)
+    service_repo = container.load("service-repository")
+    components = service_repo.list_components(service_name)
     
     return vars(BaseResponse(200, result=[component.dict() for component in components]))
+
+@app.get("/services/{service_name}/components/{component_name}")
+def getServiceComponents(service_name: str, component_name: str, request: Request):
+    request = TapisServiceAuth()(request)
+    if request.username == None:
+        return vars(BaseResponse(401, message="Not authenticated"))
+
+    service_repo = container.load("service-repository")
+    component = service_repo.get_component(service_name, component_name)
+    
+    return vars(BaseResponse(200, result=component.dict()))
 
 @app.get("/services/{service_name}/commands")
 def listServiceCommands(service_name: str, request: Request):
@@ -58,7 +72,8 @@ def listServiceCommands(service_name: str, request: Request):
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
 
-    commands = ServiceRepo.list_commands(service_name)
+    service_repo = container.load("service-repository")
+    commands = service_repo.list_commands(service_name)
 
     return vars(BaseResponse(200, result=[command.dict() for command in commands]))
 
@@ -68,7 +83,8 @@ def listComponentCommands(service_name: str, component_name: str, request: Reque
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
 
-    commands = ServiceRepo.list_component_commands(service_name, component_name)
+    service_repo = container.load("service-repository")
+    commands = service_repo.list_component_commands(service_name, component_name)
 
     return vars(BaseResponse(200, result=[command.dict() for command in commands]))
 
@@ -92,8 +108,11 @@ def runCommand(service_name: str, command_name: str, request: Request):
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
 
-    # if not request.service_can_run_command:
-    #     return vars(BaseResponse(403, message=f"Forbidden: User '{request.username}' cannot run command '{command_name}' for service '{service_name}'."))
+    service_repo = container.load("service-repository")
+    service = service_repo.get_service(service_name)
+
+    if not service_can_run_command(request.username, service):
+        return vars(BaseResponse(403, message=f"Forbidden: User '{request.username}' cannot run command '{command_name}' for service '{service_name}'."))
 
     cmd = next(filter(lambda cmd: cmd['name'] == command_name, DEFAULT_COMMANDS), None)
 
@@ -147,12 +166,16 @@ def runComponentCommand(
     if request.username == None:
         return vars(BaseResponse(401, message="Not authenticated"))
 
-    # if not service_can_run_command(service_name, command_name):
-    #     return vars(BaseResponse(403, message=f"Forbidden: User '{request.username}' cannot run command '{component_name}' for service '{service_name}'."))
-    
-    component = ServiceRepo.get_component(service_name, component_name)
+    service_repo = container.load("service-repository")
+    component = service_repo.get_component(service_name, component_name)
 
-    command = ServiceRepo.get_component_command(
+    if not service_can_run_command(request.username, component):
+        return vars(BaseResponse(403, message=f"Forbidden: User '{request.username}' cannot run commands for component '{component.name}'' of service '{service_name}'."))
+    
+    service_repo = container.load("service-repository")
+    component = service_repo.get_component(service_name, component_name)
+
+    command = service_repo.get_component_command(
         service_name,
         component.name,
         command_name
@@ -166,6 +189,7 @@ def runComponentCommand(
     if private_key == None:
         return vars(BaseResponse(500, message=f"Server Error: Missing private key for Linux user {USER}"))
 
+    secret_repo = container.load("secret_repo")
     for _ in range(30):
         try:
             ssh = paramiko.client.SSHClient()
@@ -193,6 +217,7 @@ def runComponentCommand(
     result = str(stdout.read().decode('utf-8'))
 
     ssh.close()
+
     return vars(BaseResponse(200, result=result))
 
 

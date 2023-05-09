@@ -1,5 +1,5 @@
-from models.schema import Service as ServiceSchema
-from configs.services import services
+from model.schema import Service as ServiceSchema
+from model.services import services
 
 class ServiceRepository:
     @classmethod

@@ -4,10 +4,14 @@ from typing import List
 from pydantic import BaseModel, root_validator
 from dotenv import load_dotenv
 
-from configs.constants import DEFAULT_COMMANDS
+from configs.constants import DEFAULT_COMMANDS, HOST, USER
 
 
 load_dotenv()
+
+class Platform(enum.Enum):
+    Kubernetes = "kubernetes"
+    DockerCompose = "docker_compose"
 
 class Scope(enum.Enum):
     Service = "service"
@@ -19,8 +23,8 @@ class Command(BaseModel):
 
 class Service(BaseModel):
     name: str
-    host: str
-    user: str
+    host: str = HOST
+    user: str = USER
     base_path: str
     components: List["Service"] = []
     use_default_commands: bool = True
@@ -30,6 +34,11 @@ class Service(BaseModel):
 
     @root_validator(pre=True, allow_reuse=True)
     def pre_prepare_model(cls, values):
+        # Set the is_component flag if not set(will only be set to True
+        # when components of a service are instantiated)
+        is_component = values.get("is_component", False)
+        values["is_component"] = is_component
+
         # Manually validate name and base path as this validator runs before
         # the values are transformed into a pydantic model
         service_name = values.get("name", None)
@@ -40,25 +49,25 @@ class Service(BaseModel):
         if service_base_path == None:
             raise ValueError("Schema Error: No base_path provided for service")
 
-        service_host = values.get("host", None)
-        if service_host == None:
-            values["host"] = os.environ.get("HOST", "cic02")
-
-        service_user = values.get("user", None)
-        if service_user == None:
-            values["user"] = os.environ.get("USER", "tapisdev")
+        values["host"] = values.get("host", HOST)
+        values["user"] = values.get("user", USER)
 
         # Set use default commands to True if not set
         if values.get("use_default_commands", True) == True:
             values["commands"] = values.get("commands", []) + DEFAULT_COMMANDS
 
-        # Populate the service allow list with that parent service name
+        # Populate the service allow list with that parent service name. If the
+        # service being instantiated is a component, do not add the service(component)
+        # name to the allow list
         allow_list = values.get("allow", [service_name])
-        if service_name not in allow_list:
+        if service_name not in allow_list and not is_component:
             allow_list.append(service_name)
 
         for component in values.get("components", []):
-            component["is_component"] = True # TODO is this needed?
+            # Sets all component service's is_component prop to True
+            # When the component services are instantiated, they will also
+            # run the validation logic above.
+            component["is_component"] = True
             
             # Manually validate component name as this validator runs before
             # the values are transformed into a pydantic model
@@ -72,18 +81,18 @@ class Service(BaseModel):
             if component.get("base_path", None) == None:
                 component["base_path"] = os.path.join(parent_base_path, component["name"])
             
-            # Populate the component allow list with that parent service name
-            component_allow_list = component.get("allow", [service_name])
-            if service_name not in component_allow_list:
-                component_allow_list.append(service_name)
+            # Get the allow list specified on the component. Default to list
+            # will only parent service name
+            component["allow"] = component.get("allow", [service_name])
+            
+            # Add parent service name to component allow list if not 
+            service_name not in component["allow"] and component["allow"].append(service_name)
 
-            component["allow"] = component_allow_list
+            # Inherit the parent services ssh host and ssh user
+            component["host"] = component.get("host", values.get("host"))
+            component["user"] = component.get("user", values.get("user"))
         
         return values
-
-    # @root_validator(allow_reuse=True)
-    # def post_prepare_commands(cls, values):
-    #     return values
         
 
 
