@@ -188,8 +188,8 @@ def runComponentCommand(
     private_key = ""
     if private_key == None:
         return vars(BaseResponse(500, message=f"Server Error: Missing private key for Linux user {USER}"))
-
-    secret_repo = container.load("secret_repo")
+    
+    secret_repo = container.load("secret-repo")
     for _ in range(30):
         try:
             ssh = paramiko.client.SSHClient()
