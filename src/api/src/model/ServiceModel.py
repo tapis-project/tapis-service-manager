@@ -1,36 +1,25 @@
-import enum, os
+import os
 
 from typing import List
 from pydantic import BaseModel, root_validator
 from dotenv import load_dotenv
 
-from configs.constants import DEFAULT_COMMANDS, HOST, USER
+from configs.constants import DEFAULT_COMMANDS, SSH_HOST, SSH_USER
+from .CommandModel import CommandModel
 
 
 load_dotenv()
 
-class Platform(enum.Enum):
-    Kubernetes = "kubernetes"
-    DockerCompose = "docker_compose"
-
-class Scope(enum.Enum):
-    Service = "service"
-    Component = "component"
-    
-class Command(BaseModel):
+class ServiceModel(BaseModel):
     name: str
-    scripts: List[str]
-
-class Service(BaseModel):
-    name: str
-    host: str = HOST
-    user: str = USER
+    host: str = SSH_HOST
+    user: str = SSH_USER
     base_path: str
-    components: List["Service"] = []
+    components: List["ServiceModel"] = []
     use_default_commands: bool = True
     allow: List[str] = []
     is_component: bool = False
-    commands: List[Command] = []
+    commands: List[CommandModel] = []
 
     @root_validator(pre=True, allow_reuse=True)
     def pre_prepare_model(cls, values):
@@ -49,8 +38,8 @@ class Service(BaseModel):
         if service_base_path == None:
             raise ValueError("Schema Error: No base_path provided for service")
 
-        values["host"] = values.get("host", HOST)
-        values["user"] = values.get("user", USER)
+        values["host"] = values.get("host", SSH_HOST)
+        values["user"] = values.get("user", SSH_USER)
 
         # Set use default commands to True if not set
         if values.get("use_default_commands", True) == True:
@@ -93,11 +82,3 @@ class Service(BaseModel):
             component["user"] = component.get("user", values.get("user"))
         
         return values
-        
-
-
-class Component(Service):
-    base_path: str = None
-    is_component: bool = True
-
-# Service.update_forward_refs()

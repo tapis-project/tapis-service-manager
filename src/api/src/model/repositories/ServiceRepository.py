@@ -1,12 +1,13 @@
-from model.schema import Service as ServiceSchema
-from model.services import services
+from model import ServiceModel
+from model.data import services
+from errors import ServerError
 
 class ServiceRepository:
     @classmethod
     def list_services(_):
         models = []
         for service in services:
-            models.append(ServiceSchema(**service))
+            models.append(ServiceModel(**service))
 
         return models
 
@@ -41,6 +42,15 @@ class ServiceRepository:
         model = ServiceRepository.get_service(service_name)
         
         return model.commands
+
+    @classmethod
+    def get_command(_, service, command_name):
+        command = next(
+            filter(lambda command: command.name == command_name, service.commands),
+            None
+        )
+        
+        return command
 
     @classmethod
     def list_component_commands(_, service_name, component_name):

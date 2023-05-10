@@ -1,8 +1,8 @@
-import re, os
+import re
 
 from fastapi import Request
 
-from model.schema import Scope
+from model import ScopeEnum
 
 
 def dispatch_middelwares(request: Request, middlewares: list):
@@ -11,10 +11,14 @@ def dispatch_middelwares(request: Request, middlewares: list):
 
     return request
 
-def resolve_base_path(service: dict, component_name: str = None, scope: Scope = Scope.Service) -> str:
+def resolve_base_path(
+    service: dict,
+    component_name: str = None,
+    scope: ScopeEnum = ScopeEnum.Service
+) -> str:
     target = service
     path = target['basePath']
-    if scope == Scope.Component:
+    if scope == ScopeEnum.Component:
         return path
 
     # Get the component service
@@ -39,3 +43,8 @@ def service_can_run_command(username, service):
         return True
 
     return False
+
+
+class CallableStaticClass:
+    def __new__(cls, *args, **kwargs):
+        return cls.__call__(cls, *args, **kwargs)

@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-USER = os.environ.get("USER")
-HOST = os.environ.get("HOST")
+SSH_USER = os.environ.get("SSH_USER")
+SSH_HOST = os.environ.get("SSH_HOST")
 PLATFORM = os.environ.get("PLATFORM")
 IS_LOCAL = os.environ.get("IS_LOCAL", False)
 CREDENTIALS_SECRET_REF = os.environ.get("CREDENTIALS_SECRET_REF")

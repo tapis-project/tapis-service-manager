@@ -1,11 +1,10 @@
-from configs.constants import PLATFORM
-from model.schema import Platform
+from model import PlatformEnum
 from helpers import KubernetesAPIGateway
 
 class SecretRepository:
     def __init__(
         self,
-        platform: Platform,
+        platform: PlatformEnum,
         kubernetes_api_gateway: KubernetesAPIGateway = None,
         is_local = False
     ):

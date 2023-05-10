@@ -6,10 +6,10 @@ RUN apt-get install -y vim git
 
 RUN mkdir src
 
-COPY src/requirements.txt /src/requirements.txt
+COPY src/api/src/requirements.txt /src/requirements.txt
 
 WORKDIR /src
 
 RUN pip install -r requirements.txt
 
-COPY src/ /src
+COPY src/api/src /src
