@@ -1,6 +1,5 @@
 from model import ServiceModel
 from model.data import services
-from errors import ServerError
 
 class ServiceRepository:
     @classmethod

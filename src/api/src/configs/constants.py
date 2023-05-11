@@ -8,7 +8,8 @@ SSH_USER = os.environ.get("SSH_USER")
 SSH_HOST = os.environ.get("SSH_HOST")
 PLATFORM = os.environ.get("PLATFORM")
 IS_LOCAL = os.environ.get("IS_LOCAL", False)
-CREDENTIALS_SECRET_REF = os.environ.get("CREDENTIALS_SECRET_REF")
+SSH_SECRET_REF = os.environ.get("SSH_SECRET_REF")
+SSH_TIMEOUT = os.environ.get("SSH_TIMEOUT", 300)
 
 DEFAULT_COMMANDS = [
     {

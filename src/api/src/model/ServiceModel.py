@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel, root_validator
 from dotenv import load_dotenv
 
-from configs.constants import DEFAULT_COMMANDS, SSH_HOST, SSH_USER
+from configs.constants import DEFAULT_COMMANDS, SSH_HOST, SSH_USER, SSH_SECRET_REF
 from .CommandModel import CommandModel
 
 
@@ -14,6 +14,7 @@ class ServiceModel(BaseModel):
     name: str
     host: str = SSH_HOST
     user: str = SSH_USER
+    ssh_secret_ref: str = SSH_SECRET_REF
     base_path: str
     components: List["ServiceModel"] = []
     use_default_commands: bool = True
@@ -72,7 +73,7 @@ class ServiceModel(BaseModel):
             
             # Get the allow list specified on the component. Default to list
             # will only parent service name
-            component["allow"] = component.get("allow", [service_name])
+            component["allow"] = component.get("allow", allow_list)
             
             # Add parent service name to component allow list if not 
             service_name not in component["allow"] and component["allow"].append(service_name)

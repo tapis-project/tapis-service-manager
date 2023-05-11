@@ -95,7 +95,7 @@ def listCommands(request: Request):
 
     return BaseResponse(200, result=DEFAULT_COMMANDS)
 
-@app.post("/services/{service_name}/commands/{component_name}")
+@app.post("/services/{service_name}/commands/{command_name}")
 def runCommand(service_name: str, command_name: str, request: Request):
     request = dispatch_middelwares(request,[
         TapisServiceAuth(),
@@ -122,7 +122,7 @@ def runCommand(service_name: str, command_name: str, request: Request):
     except ServerError as e:
         return BaseResponse(500, message=f"{e}")
 
-    return BaseResponse(200, result=result)
+    return BaseResponse(200, result=result, message=f"Successfully ran commands: {command.name}")
 
 @app.post("/services/{service_name}/components/{component_name}/commands/{command_name}")
 def runComponentCommand(
@@ -163,7 +163,7 @@ def runComponentCommand(
     except Exception as e:
         return BaseResponse(500, message=f"ServerError: {e}")
 
-    return BaseResponse(200, result=result)
+    return BaseResponse(200, result=result, message=f"Successfully ran commands: {command.name}")
 
 
 def camel_case_operation_ids(app: FastAPI) -> None:
